@@ -5,17 +5,30 @@ import numpy as np
 
 class Zia(object):
 
-    def __init__(self, r, N=500):
-        self._r = r
+    def __init__(self, radius, rayLen, thickness, N=500):
+        self._r = radius
+        self._l = rayLen
+        self._t = thickness
         self._d = 2.0*self._r/6.0
         self._N = N
 
-    def northRayPoints(self):
+    def genZia(self):
+        xpts, ypts = np.array([]), np.array([])
+        ptsx, ptsy = self.genSun()
+        xpts = np.append(xpts, ptsx)
+        ypts = np.append(ypts, ptsy)
+        ptsx, ptsy = self.genRays()
+        xpts = np.append(xpts, ptsx)
+        ypts = np.append(ypts, ptsy)
+
+        return np.array(xpts), np.array(ypts)
+
+    def genNorthRays(self):
         rays = list()
         for n in range(1, 5):
             xrn = (n * self._d + 0.5 * self._d) - self._r
             yrn = self._r * np.sin(np.arccos(xrn / self._r))
-            l = self._r if n in [2, 3] else (0.75) * self._r
+            l = self._l if n in [2, 3] else (0.75) * self._l
             rays.append(
                 [[xrn, yrn],
                 [xrn, yrn + l]],
@@ -32,7 +45,7 @@ class Zia(object):
         return np.array(xpts), np.array(ypts)
 
     def genRays(self):
-        xpts, ypts = self.northRayPoints()
+        xpts, ypts = self.genNorthRays()
         raysx, raysy = list(xpts), list(ypts)
         t = np.pi/2
         rotM = np.array([[np.cos(t), -np.sin(t)], [np.sin(t), np.cos(t)]])
@@ -51,23 +64,21 @@ class Zia(object):
         for t in np.linspace(0, 2 * np.pi, self._N):
             xpts.append(self._r * np.cos(t))
             ypts.append(self._r * np.sin(t))
+
         return np.array(xpts), np.array(ypts)
 
     def draw(self):
         fig, ax = plt.subplots()
-
-        xpts, ypts = self.genSun()
-        plt.scatter(xpts, ypts, color='r')
-        xpts, ypts = self.genRays()
-        plt.scatter(xpts, ypts, color='r')
-
+        xpts, ypts = self.genZia()
+        ax.set_aspect('equal')
+        plt.scatter(xpts, ypts, s=self._t, color='r')
         plt.show()
 
 
 
 
 def main():
-    zia = Zia(1)
+    zia = Zia(1, 2, 100)
     zia.draw()
 
 
