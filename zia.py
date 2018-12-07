@@ -72,10 +72,8 @@ class Zia(object):
         xpts, ypts = self.genZia()
         ax.set_aspect('equal')
         plt.scatter(xpts, ypts, s=self._t, color='r')
+        plt.savefig('zia.png')
         plt.show()
-
-
-
 
 def main():
     zia = Zia(1, 2, 100)
