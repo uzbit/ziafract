@@ -1,6 +1,6 @@
 
 import matplotlib
-matplotlib.use('TkAgg')
+matplotlib.use('macosx')
 import matplotlib.pyplot as plt
 import numpy as np
 from zia import Zia
@@ -16,7 +16,7 @@ def fract(xpts, ypts, scale, rot):
     return fract(np.array(newxpts).flatten(), np.array(newypts).flatten(), 0.01*scale, rot)
 
 def main():
-    ziaObj = Zia(1.0, 2.0, 100, thickness=100, rayN=5, sunN=4)
+    ziaObj = Zia(1.0, 2.0, 1, rayN=5, sunN=4)
     xpts, ypts = ziaObj.genZia()
     xpts, ypts = fract(xpts, ypts, 0.045, 10)
     fig, ax = plt.subplots()
@@ -24,7 +24,7 @@ def main():
 
     #plt.axis('off')
     matplotlib.rcParams['markers.fillstyle'] = 'full'
-    matplotlib.rcParams['scatter.marker'] = ','
+    matplotlib.rcParams['scatter.marker'] = 'o'
     matplotlib.rcParams['lines.markersize'] = 1
 
     plt.scatter(xpts, ypts, color='black')
