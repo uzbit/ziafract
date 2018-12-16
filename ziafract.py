@@ -18,16 +18,16 @@ def fract(xpts, ypts, scale, rot):
 def main():
     ziaObj = Zia(1.0, 2.0, 1, rayN=5, sunN=4)
     xpts, ypts = ziaObj.genZia()
-    xpts, ypts = fract(xpts, ypts, 0.045, 10)
+    xpts, ypts = fract(xpts, ypts, 0.05, 10)
     fig, ax = plt.subplots()
     ax.set_aspect('equal')
 
-    #plt.axis('off')
+    plt.axis('off')
     matplotlib.rcParams['markers.fillstyle'] = 'full'
-    matplotlib.rcParams['scatter.marker'] = 'o'
+    matplotlib.rcParams['scatter.marker'] = '.'
     matplotlib.rcParams['lines.markersize'] = 1
 
-    plt.scatter(xpts, ypts, color='black')
+    plt.scatter(xpts, ypts, s=1, color='black')
     plt.savefig('ziafract.pdf')
     plt.show()
 

@@ -5,7 +5,7 @@ import numpy as np
 
 class Zia(object):
 
-    def __init__(self, radius, rayLen, scale, thickness=100, rayN=500, sunN=500):
+    def __init__(self, radius, rayLen, scale, npts=None, thickness=100, rayN=500, sunN=500):
         self._r = radius
         self._l = rayLen
         self._s = scale
@@ -13,7 +13,9 @@ class Zia(object):
         self._d = 2.0*self._r/6.0
         self._rN = rayN
         self._sN = sunN
-
+        if npts:
+            self._rN = int(npts*0.2*0.25)
+            self._sN = int(npts*0.2)
 
     def genZia(self):
         xpts, ypts = np.array([]), np.array([])
@@ -39,7 +41,8 @@ class Zia(object):
 
         xpts, ypts = list(), list()
         for k, ray in enumerate(rays):
-            N = self._rN + (1 if k in [1,2] else 0)
+            #N = self._rN + (1 if k in [1, 2] else 0)
+            N = self._rN + (1 if k in [1, 2] else 0)
             dx = (ray[1][0] - ray[0][0])/float(N)
             dy = (ray[1][1] - ray[0][1])/float(N)
             for i in range(N):
@@ -65,26 +68,46 @@ class Zia(object):
 
     def genSun(self):
         xpts, ypts = list(), list()
-        #for t in np.linspace(0, 2 * np.pi, self._sN):
-        for t in [np.pi/4.0, 3*np.pi/4.0, 5*np.pi/4.0, 7*np.pi/4.0]:
-            xpts.append(self._r * np.cos(t))
-            ypts.append(self._r * np.sin(t))
+        if self._sN != 4:
+            for t in np.linspace(0, 2 * np.pi, self._sN):
+                xpts.append(self._r * np.cos(t))
+                ypts.append(self._r * np.sin(t))
+        else:
+            for t in [np.pi/4.0, 3*np.pi/4.0, 5*np.pi/4.0, 7*np.pi/4.0]:
+                xpts.append(self._r * np.cos(t))
+                ypts.append(self._r * np.sin(t))
 
         return np.array(xpts), np.array(ypts)
+
+    @staticmethod
+    def getImage(N, M):
+        zia = Zia(0.25, 0.5, 1, npts=500)
+        xpts, ypts = zia.genZia()
+        img = np.empty((N, M))
+        xpts, ypts = ((N/2.)*xpts+(N/2.)), ((M/2.)*ypts+(M/2.))
+        for x, y in zip(xpts, ypts):
+            img[int(x)][int(y)] = 1
+
+        print(np.sum(img))
+        print(img)
+        plt.imshow(img, cmap='gray')
+        plt.show()
+        return img
 
     def draw(self):
         fig, ax = plt.subplots()
         xpts, ypts = self.genZia()
         ax.set_aspect('equal')
 
-        #plt.axis('off')
+        plt.axis('off')
         plt.scatter(xpts, ypts, s=self._t, color='r')
         plt.savefig('zia.png')
         plt.show()
 
 def main():
-    zia = Zia(1, 2, 1, thickness=100)
+    zia = Zia(1, 2, 1, thickness=50)
     zia.draw()
+    #Zia.getImage(500, 500)
 
 
 
