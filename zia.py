@@ -80,7 +80,7 @@ class Zia(object):
         return np.array(xpts), np.array(ypts)
 
     @staticmethod
-    def getImage(N, M):
+    def getImage(N, M, show=True):
         zia = Zia(0.25, 0.5, 1, npts=500)
         xpts, ypts = zia.genZia()
         img = np.empty((N, M))
@@ -88,20 +88,23 @@ class Zia(object):
         for x, y in zip(xpts, ypts):
             img[int(x)][int(y)] = 1
 
-        print(np.sum(img))
-        print(img)
-        plt.imshow(img, cmap='gray')
-        plt.show()
+        if show:
+            print(np.sum(img))
+            print(img)
+            plt.imshow(img, cmap='gray')
+            plt.show()
+
         return img
 
     def draw(self):
         fig, ax = plt.subplots()
+        fig.set_size_inches(5, 5)
         xpts, ypts = self.genZia()
         ax.set_aspect('equal')
 
         plt.axis('off')
         plt.scatter(xpts, ypts, s=self._t, color='r')
-        plt.savefig('zia.png')
+        plt.savefig('zia.png', dpi=1000)
         plt.show()
 
 def main():

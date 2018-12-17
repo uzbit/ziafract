@@ -8,6 +8,7 @@ Julia and Mandelbrot fractals image creation
 """
 
 from __future__ import division, print_function
+import sys
 from mpl_toolkits.mplot3d import Axes3D
 import matplotlib.pyplot as plt
 from matplotlib import cm
@@ -18,6 +19,7 @@ import multiprocessing
 from zia import Zia
 from scipy import signal
 import cv2
+import numpy as np
 from scipy.interpolate import griddata
 
 Point = collections.namedtuple("Point", ["x", "y"])
@@ -136,32 +138,36 @@ def generate_fractal(model, c=None, size=pair_reader(int)(DEFAULT_SIZE),
 	print('CPU Count:', num_procs)
 	start = time.time()
 
-	#zia = Zia(0.5, 1, 1, npts=200)
-
 	# Create a pool of workers, one for each row
 	pool = multiprocessing.Pool(num_procs)
 	procs = [pool.apply_async(generate_row,
-														[model, c, size, depth, zoom, center, row])
-					 for row in range(size[1])]
+			[model, c, size, depth, zoom, center, row])
+			for row in range(size[1])]
 
 	# Generates the intensities for each pixel
 	img = pylab.array([row_proc.get() for row_proc in procs])
-	# print(img)
-	ziaImg = Zia.getImage(int(size[0]/20.), int(size[1]/20.))
+
+	print('Fractal time taken:', time.time() - start)
+	start = time.time()
+
+	# Create Zia
+	#ziaImg = Zia.getImage(int(size[0]/20.), int(size[1]/20.), show=False)
 	x = range(len(img))
 	y = range(len(img[0]))
 	x2, y2 = pylab.meshgrid(x, y)
+	img = cv2.blur(img, (5, 5))
+	img = place_zias(img, 'zia.png')
+	print('Zia time taken:', time.time() - start)
+
 	fig = plt.figure()
 	ax = fig.gca(projection='3d')
-	#img = threshold_img(img, 30)
-	img = cv2.blur(img, (10, 10))
-	gradx, grady = pylab.gradient(img, 1, 1)
-
 	surf = ax.plot_surface(
 		x2, y2, img, cmap=cm.coolwarm,
 		linewidth=0, antialiased=True
 	)
+
 	plt.show()
+
 	#
  # img = signal.convolve2d(img, ziaImg)
 	#kernel_sharpening = pylab.array([[-1,-1,-1],
@@ -176,15 +182,108 @@ def generate_fractal(model, c=None, size=pair_reader(int)(DEFAULT_SIZE),
 	# img = ziaX + ziaY
 	#img = pylab.vstack((gradx, grady))
 
-	print('Time taken:', time.time() - start)
+
+	return img
+
+
+def dist2(p1, p2):
+	return (p1[0]-p2[0])**2 + (p1[1]-p2[1])**2
+
+def fuse(points, scales, multiplier):
+	ret = []
+	#d2 = d * d
+	indexes = list(range(len(scales)))
+	indexes.sort(key=scales.__getitem__, reverse=True)
+	points = list(map(points.__getitem__, indexes))
+	scales = list(map(scales.__getitem__, indexes))
+	#scales, points = [list(t) for t in zip(*sorted(zip(list(scales), list(points)), reverse=True))]
+
+	n = len(points)
+	taken = [False] * n
+	for i in range(n):
+		if not taken[i]:
+			count = 1
+			point = [points[i][0], points[i][1]]
+			taken[i] = True
+			d2 = multiplier * scales[i]
+			d2 *= d2
+			for j in range(i+1, n):
+				if dist2(points[i], points[j]) < d2:
+					point[0] += points[j][0]
+					point[1] += points[j][1]
+					count+=1
+					taken[j] = True
+			point[0] /= count
+			point[1] /= count
+			ret.append([int(point[0]), int(point[1])])
+	return np.array(ret)
+
+
+def place_zias(img, ziaimgpath):
+	ziaimg = cv2.imread(ziaimgpath, cv2.IMREAD_GRAYSCALE)
+	ziaimg = 255 - ziaimg
+	gradx, grady = np.gradient(img, 1, 1)
+	gradmag = gradx*gradx + grady*grady
+	peaks = np.argwhere((img > 50))
+	scaledimg = img/np.max(img)
+	orig = np.array(scaledimg)
+
+	peakscales = list()
+	for peak in peaks:
+		scale = scaledimg[peak[0]][peak[1]]
+		peakscales.append(scale)
+
+	peaks = fuse(peaks, peakscales, 50)
+
+	fig = plt.figure()
+	plt.imshow(img, cmap='gray')
+	plt.scatter([x[1]for x in peaks], [x[0]for x in peaks])
+	plt.show()
+
+	def select_box(img, cx, cy, mag, size):
+		#print(int(cx-size/2*mag), int(cx+size/2*mag))
+		#print(int(cy-size/2*mag),int(cy+size/2*mag))
+		return img[int(cx-size/2*mag):int(cx+size/2*mag), :][:, int(cy-size/2*mag):int(cy+size/2*mag)]
+
+	def replace_box(img, repl, cx, cy, mag, size):
+		x1, x2 = int(cx-size/2*mag), int(cx+size/2*mag)
+		y1, y2 = int(cy-size/2*mag), int(cy+size/2*mag)
+		for i, x in enumerate(range(x1, x2)):
+			for j, y in enumerate(range(y1, y2)):
+				img[x][y] += repl[i][j]
+		return img
+
+	img = np.zeros(orig.shape)
+	for peak in peaks:
+		scale = scaledimg[peak[0]][peak[1]]
+		scale *= scale
+		#print(peak, scaledimg[peak[0]][peak[1]])
+		subbox = select_box(orig, peak[0], peak[1], scale, 200)
+		subbox = subbox * cv2.resize(ziaimg, subbox.shape)
+		img = replace_box(img, subbox, peak[0], peak[1], scale, 200)
+		#if img[peak[0]][peak[1]] > maxpeak:
+		#	maxpeak = img[peak[0]][peak[1]]
+		#	cx, cy = peak
+		#	print(maxpeak, cx, cy)
+
+	img = np.log(img+1)
+	# print(img, cx, cy, maxpeak)
+	# print(ziaimg)
+	# subbox = select_box(img, cx, cy, maxpeak, 100)
+	# subbox = subbox * cv2.resize(ziaimg, subbox.shape)
+	# print(subbox)
+	fig = plt.figure()
+	plt.imshow(img, cmap='gray')
+	plt.show()
+	sys.exit(1)
 	return img
 
 def threshold_img(img, cutoff):
-		for i in range(len(img)):
-				for j in range(len(img[0])):
-						if img[i][j] <= cutoff:
-								img[i][j] = 0
-		return img
+	for i in range(len(img)):
+		for j in range(len(img[0])):
+			if img[i][j] <= cutoff:
+				img[i][j] = 0
+	return img
 
 
 def generate_row(model, c, size, depth, zoom, center, row):
