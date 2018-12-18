@@ -1,5 +1,8 @@
+# Created on Dec 7 2018
+# License is MIT, see COPYING.txt for more details.
+# @author: Theodore John McCormack
+
 import matplotlib
-matplotlib.use('macosx')
 import matplotlib.pyplot as plt
 import numpy as np
 
@@ -110,7 +113,6 @@ class Zia(object):
 def main():
     zia = Zia(1, 2, 1, thickness=0.01)
     zia.draw()
-    #Zia.getImage(500, 500)
 
 
 

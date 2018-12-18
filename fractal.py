@@ -1,26 +1,28 @@
 #!/usr/bin/env python
+
 # -*- coding: utf-8 -*-
 # Created on Tue Apr 08 08:45:59 2014
 # License is MIT, see COPYING.txt for more details.
 # @author: Danilo de Jesus da Silva Bellini
+
+# Modified for masking fractals with images by Ted McCormack around Dec 18, 2018
+# primarily in place_imgs
+
 """
 Julia and Mandelbrot fractals image creation
 """
 
 from __future__ import division, print_function
 import sys
+import time
 from mpl_toolkits.mplot3d import Axes3D
 import matplotlib.pyplot as plt
 from matplotlib import cm
+import numpy as np
 import pylab, argparse, collections, inspect, functools
 from itertools import takewhile
-import time
 import multiprocessing
-from zia import Zia
-from scipy import signal
 import cv2
-import numpy as np
-from scipy.interpolate import griddata
 
 Point = collections.namedtuple("Point", ["x", "y"])
 
@@ -34,14 +36,15 @@ DEFAULT_ZOOM = "1"
 DEFAULT_CENTER = "0x0"
 DEFAULT_COLORMAP = "gray"
 
+DEFAULT_SMALL_IMG = 'zia_small.png'
+DEFAULT_LARGE_IMG = 'zia_big.png'
+
 # best constants so far:
 #  -0.75472 -0.11792 j
 #
 
 # run with:
 #  python3 fractal.py julia -0.75472 -0.06592 j --size=1000x1000  --depth=500 --zoom=0.6 --show
-
-
 
 def repeater(f):
 	"""
@@ -158,10 +161,10 @@ def generate_fractal(model, c=None, size=pair_reader(int)(DEFAULT_SIZE),
 	print('Fractal time taken:', time.time() - start)
 	start = time.time()
 
-	# Create Zia
-	img = place_zias(img, size, 'zia_small.png', 'zia_big.png')
+	# Place images
+	img = place_zias(img, size, DEFAULT_SMALL_IMG, DEFAULT_LARGE_IMG)
 
-	print('Zia time taken:', time.time() - start)
+	print('Image time taken:', time.time() - start)
 
 	fig = plt.figure()
 	ax = fig.gca(projection='3d')
@@ -233,7 +236,6 @@ def place_zias(img, size, ziasmall, ziabig):
 	peakscales = list()
 	for peak in peaks:
 		scale = scaledimg[peak[0]][peak[1]]
-		#scale *= scale
 		peakscales.append(scale)
 	peaks = fuse(peaks, peakscales, RADIAL_MULTIPLIER)
 
@@ -264,33 +266,13 @@ def place_zias(img, size, ziasmall, ziabig):
 				img[x][y] += repl[i][j]
 		return img
 
-	ziascale = ZIA_SCALE
 	mask = np.zeros(orig.shape)
+	ziaimg = ziasmall
 	for peak in peaks:
 		scale = scaledimg[peak[0]][peak[1]]
-		#scale *= scale
-		subbox = select_box(mask, peak[0], peak[1], scale, ziascale)
-		# if subbox.shape[0] < 100:
-		# 	print("using small", subbox.shape, ziasmall.shape)
-		# 	ziaimg = ziasmall
-		# else:
-		# 	print("using big", subbox.shape, ziabig.shape)
-		ziaimg = ziasmall
-
+		subbox = select_box(mask, peak[0], peak[1], scale, ZIA_SCALE)
 		subbox = np.transpose(cv2.resize(ziaimg, subbox.shape, cv2.INTER_AREA))
-		mask = replace_box(mask, subbox, peak[0], peak[1], scale, ziascale)
-		# if subbox.shape[0] < 50:
-		# 	ziaimg = ziasmall
-		# else:
-		# 	ziaimg = ziabig
-		#
-		# if 0.5*(subbox.shape[0] + subbox.shape[1]) < MIN_ZIA_SIZE:
-		# 	continue
-		# try:
-		# 	subbox = subbox * np.transpose(cv2.resize(ziaimg, subbox.shape, cv2.INTER_AREA))
-		# 	img = replace_box(img, subbox, peak[0], peak[1], scale, ziascale)
-		# except:
-		# 	print(subbox.shape)
+		mask = replace_box(mask, subbox, peak[0], peak[1], scale, ZIA_SCALE)
 
 	img = mask * img
 	fig, ax = plt.subplots()
@@ -298,7 +280,7 @@ def place_zias(img, size, ziasmall, ziabig):
 	plt.tight_layout()
 	ax.set_aspect('equal')
 	plt.imshow(img, cmap='hot')
-	plt.savefig('juliaziafract.png', dpi=1200)
+	plt.savefig('juliaziafract.png', dpi=1000)
 	plt.show()
 	sys.exit(1)
 	return img

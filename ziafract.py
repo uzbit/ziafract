@@ -1,3 +1,7 @@
+# Created on Dec 7 2018
+# License is MIT, see COPYING.txt for more details.
+# @author: Theodore John McCormack
+
 import matplotlib
 import matplotlib.pyplot as plt
 import numpy as np
@@ -20,8 +24,6 @@ def fract(xpts, ypts, scale):
         newxpts.append(xpts1)
         newypts.append(ypts1)
     return fract(np.array(newxpts).flatten(), np.array(newypts).flatten(), SCALE_STEPDOWN*scale)
-
-    return tf.dynspread(img, threshold=0.50, name=name)
 
 def main():
     ziaObj = Zia(1.0, 2.0, 1, rayN=5, sunN=4)
