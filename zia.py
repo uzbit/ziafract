@@ -98,17 +98,17 @@ class Zia(object):
 
     def draw(self):
         fig, ax = plt.subplots()
-        fig.set_size_inches(5, 5)
+        fig.set_size_inches(1, 1)
         xpts, ypts = self.genZia()
         ax.set_aspect('equal')
 
         plt.axis('off')
-        plt.scatter(xpts, ypts, s=self._t, color='r')
-        plt.savefig('zia.png', dpi=1000)
+        plt.scatter(xpts, ypts, s=self._t, color='black')
+        plt.savefig('zia_small.png', dpi=250)
         plt.show()
 
 def main():
-    zia = Zia(1, 2, 1, thickness=50)
+    zia = Zia(1, 2, 1, thickness=0.01)
     zia.draw()
     #Zia.getImage(500, 500)
 

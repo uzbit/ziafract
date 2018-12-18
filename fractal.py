@@ -34,6 +34,14 @@ DEFAULT_ZOOM = "1"
 DEFAULT_CENTER = "0x0"
 DEFAULT_COLORMAP = "gray"
 
+# best constants so far:
+#  -0.75472 -0.11792 j
+#
+
+# run with:
+#  python3 fractal.py julia -0.75472 -0.06592 j --size=1000x1000  --depth=500 --zoom=0.6 --show
+
+
 
 def repeater(f):
 	"""
@@ -151,37 +159,21 @@ def generate_fractal(model, c=None, size=pair_reader(int)(DEFAULT_SIZE),
 	start = time.time()
 
 	# Create Zia
-	#ziaImg = Zia.getImage(int(size[0]/20.), int(size[1]/20.), show=False)
-	x = range(len(img))
-	y = range(len(img[0]))
-	x2, y2 = pylab.meshgrid(x, y)
-	img = cv2.blur(img, (5, 5))
-	img = place_zias(img, 'zia.png')
+	img = place_zias(img, size, 'zia_small.png', 'zia_big.png')
+
 	print('Zia time taken:', time.time() - start)
 
 	fig = plt.figure()
 	ax = fig.gca(projection='3d')
+	x = range(len(img))
+	y = range(len(img[0]))
+	x2, y2 = pylab.meshgrid(x, y)
 	surf = ax.plot_surface(
 		x2, y2, img, cmap=cm.coolwarm,
 		linewidth=0, antialiased=True
 	)
 
 	plt.show()
-
-	#
- # img = signal.convolve2d(img, ziaImg)
-	#kernel_sharpening = pylab.array([[-1,-1,-1],
-#                                                            [-1, 9,-1],
-#                                                            [-1,-1,-1]])
-
-	#img = cv2.filter2D(img, -1, ziaImg)
-	#img = img/img.max()
-	#img = img*img
-	# ziaX = signal.convolve2d(gradx, ziaImg)
-	# ziaY = signal.convolve2d(grady, ziaImg)
-	# img = ziaX + ziaY
-	#img = pylab.vstack((gradx, grady))
-
 
 	return img
 
@@ -191,12 +183,10 @@ def dist2(p1, p2):
 
 def fuse(points, scales, multiplier):
 	ret = []
-	#d2 = d * d
 	indexes = list(range(len(scales)))
 	indexes.sort(key=scales.__getitem__, reverse=True)
 	points = list(map(points.__getitem__, indexes))
 	scales = list(map(scales.__getitem__, indexes))
-	#scales, points = [list(t) for t in zip(*sorted(zip(list(scales), list(points)), reverse=True))]
 
 	n = len(points)
 	taken = [False] * n
@@ -219,61 +209,96 @@ def fuse(points, scales, multiplier):
 	return np.array(ret)
 
 
-def place_zias(img, ziaimgpath):
-	ziaimg = cv2.imread(ziaimgpath, cv2.IMREAD_GRAYSCALE)
-	ziaimg = 255 - ziaimg
-	gradx, grady = np.gradient(img, 1, 1)
-	gradmag = gradx*gradx + grady*grady
-	peaks = np.argwhere((img > 50))
+MIN_FOR_PEAK = 0.2
+RADIAL_MULTIPLIER = 50
+MIN_ZIA_SIZE = 20
+ZIA_SCALE = 200
+
+def place_zias(img, size, ziasmall, ziabig):
+	blurx, blury = int(size[0]/200.), int(size[0]/200.)
+	img = cv2.blur(img, (blurx, blury))
+
+	def read_zia(path):
+		ziaimg = cv2.imread(path, cv2.IMREAD_GRAYSCALE)
+		ziaimg = cv2.bitwise_not(ziaimg)
+		return ziaimg
+
+	ziasmall = read_zia(ziasmall)
+	ziabig = read_zia(ziabig)
+
 	scaledimg = img/np.max(img)
 	orig = np.array(scaledimg)
+	peaks = np.argwhere((scaledimg >= MIN_FOR_PEAK))
 
 	peakscales = list()
 	for peak in peaks:
 		scale = scaledimg[peak[0]][peak[1]]
+		#scale *= scale
 		peakscales.append(scale)
-
-	peaks = fuse(peaks, peakscales, 50)
+	peaks = fuse(peaks, peakscales, RADIAL_MULTIPLIER)
 
 	fig = plt.figure()
 	plt.imshow(img, cmap='gray')
 	plt.scatter([x[1]for x in peaks], [x[0]for x in peaks])
 	plt.show()
 
-	def select_box(img, cx, cy, mag, size):
-		#print(int(cx-size/2*mag), int(cx+size/2*mag))
-		#print(int(cy-size/2*mag),int(cy+size/2*mag))
-		return img[int(cx-size/2*mag):int(cx+size/2*mag), :][:, int(cy-size/2*mag):int(cy+size/2*mag)]
+	def get_xy(cx, cy, mag, s):
+		x1 = int(cx-s/2*mag)
+		x2 = int(cx+s/2*mag)
+		diff = x2 - x1
+		if diff % 2 == 1:
+			x1 += 1
+			diff -= 1
+		y1 = int(cy-diff/2)
+		y2 = int(cy+diff/2)
+		return max(x1, 0), min(x2, size[0]), max(y1, 0), min(y2, size[1])
 
-	def replace_box(img, repl, cx, cy, mag, size):
-		x1, x2 = int(cx-size/2*mag), int(cx+size/2*mag)
-		y1, y2 = int(cy-size/2*mag), int(cy+size/2*mag)
+	def select_box(img, cx, cy, mag, s):
+		x1, x2, y1, y2 = get_xy(cx, cy, mag, s)
+		return img[x1:x2, :][:, y1:y2]
+
+	def replace_box(img, repl, cx, cy, mag, s):
+		x1, x2, y1, y2 = get_xy(cx, cy, mag, s)
 		for i, x in enumerate(range(x1, x2)):
 			for j, y in enumerate(range(y1, y2)):
 				img[x][y] += repl[i][j]
 		return img
 
-	img = np.zeros(orig.shape)
+	ziascale = ZIA_SCALE
+	mask = np.zeros(orig.shape)
 	for peak in peaks:
 		scale = scaledimg[peak[0]][peak[1]]
-		scale *= scale
-		#print(peak, scaledimg[peak[0]][peak[1]])
-		subbox = select_box(orig, peak[0], peak[1], scale, 200)
-		subbox = subbox * cv2.resize(ziaimg, subbox.shape)
-		img = replace_box(img, subbox, peak[0], peak[1], scale, 200)
-		#if img[peak[0]][peak[1]] > maxpeak:
-		#	maxpeak = img[peak[0]][peak[1]]
-		#	cx, cy = peak
-		#	print(maxpeak, cx, cy)
+		#scale *= scale
+		subbox = select_box(mask, peak[0], peak[1], scale, ziascale)
+		# if subbox.shape[0] < 100:
+		# 	print("using small", subbox.shape, ziasmall.shape)
+		# 	ziaimg = ziasmall
+		# else:
+		# 	print("using big", subbox.shape, ziabig.shape)
+		ziaimg = ziasmall
 
-	img = np.log(img+1)
-	# print(img, cx, cy, maxpeak)
-	# print(ziaimg)
-	# subbox = select_box(img, cx, cy, maxpeak, 100)
-	# subbox = subbox * cv2.resize(ziaimg, subbox.shape)
-	# print(subbox)
-	fig = plt.figure()
-	plt.imshow(img, cmap='gray')
+		subbox = np.transpose(cv2.resize(ziaimg, subbox.shape, cv2.INTER_AREA))
+		mask = replace_box(mask, subbox, peak[0], peak[1], scale, ziascale)
+		# if subbox.shape[0] < 50:
+		# 	ziaimg = ziasmall
+		# else:
+		# 	ziaimg = ziabig
+		#
+		# if 0.5*(subbox.shape[0] + subbox.shape[1]) < MIN_ZIA_SIZE:
+		# 	continue
+		# try:
+		# 	subbox = subbox * np.transpose(cv2.resize(ziaimg, subbox.shape, cv2.INTER_AREA))
+		# 	img = replace_box(img, subbox, peak[0], peak[1], scale, ziascale)
+		# except:
+		# 	print(subbox.shape)
+
+	img = mask * img
+	fig, ax = plt.subplots()
+	plt.axis('off')
+	plt.tight_layout()
+	ax.set_aspect('equal')
+	plt.imshow(img, cmap='hot')
+	plt.savefig('juliaziafract.png', dpi=1200)
 	plt.show()
 	sys.exit(1)
 	return img
