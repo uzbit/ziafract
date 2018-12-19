@@ -6,7 +6,7 @@
 # @author: Danilo de Jesus da Silva Bellini
 
 # Modified for masking fractals with images by Ted McCormack around Dec 18, 2018
-# primarily in place_imgs
+# Original repo from author above is: https://github.com/danilobellini/fractal
 
 """
 Julia and Mandelbrot fractals image creation
@@ -15,12 +15,12 @@ Julia and Mandelbrot fractals image creation
 from __future__ import division, print_function
 import sys
 import time
+from itertools import takewhile
+import pylab, argparse, collections, inspect, functools
 from mpl_toolkits.mplot3d import Axes3D
 import matplotlib.pyplot as plt
 from matplotlib import cm
 import numpy as np
-import pylab, argparse, collections, inspect, functools
-from itertools import takewhile
 import multiprocessing
 import cv2
 
@@ -44,7 +44,7 @@ DEFAULT_LARGE_IMG = 'zia_big.png'
 #
 
 # run with:
-#  python3 fractal.py julia -0.75472 -0.06592 j --size=1000x1000  --depth=500 --zoom=0.6 --show
+#  python3 image_fractal.py julia -0.75472 -0.06592 j --size=1000x1000  --depth=500 --zoom=0.6 --show
 
 def repeater(f):
 	"""
@@ -162,7 +162,7 @@ def generate_fractal(model, c=None, size=pair_reader(int)(DEFAULT_SIZE),
 	start = time.time()
 
 	# Place images
-	img = place_zias(img, size, DEFAULT_SMALL_IMG, DEFAULT_LARGE_IMG)
+	img = place_images(img, size, DEFAULT_SMALL_IMG, DEFAULT_LARGE_IMG)
 
 	print('Image time taken:', time.time() - start)
 
@@ -217,18 +217,18 @@ RADIAL_MULTIPLIER = 50
 MIN_ZIA_SIZE = 35
 ZIA_SCALE = 150
 
-def place_zias(img, size, ziasmall, ziabig):
+def place_images(img, size, imagesmall, imagebig):
 	blurx, blury = int(size[0]/200.), int(size[0]/200.)
 	img = cv2.blur(img, (blurx, blury))
 	img = np.sqrt(img)
 
-	def read_zia(path):
-		ziaimg = cv2.imread(path, cv2.IMREAD_GRAYSCALE)
-		ziaimg = cv2.bitwise_not(ziaimg)
-		return ziaimg
+	def read_image(path):
+		imageimg = cv2.imread(path, cv2.IMREAD_GRAYSCALE)
+		imageimg = cv2.bitwise_not(imageimg)
+		return imageimg
 
-	ziasmall = read_zia(ziasmall)
-	ziabig = read_zia(ziabig)
+	imagesmall = read_image(imagesmall)
+	imagebig = read_image(imagebig)
 
 	scaledimg = img/np.max(img)
 	orig = np.array(scaledimg)
@@ -270,14 +270,14 @@ def place_zias(img, size, ziasmall, ziabig):
 		return img
 
 	mask = np.zeros(orig.shape)
-	ziaimg = ziasmall
+	imageimg = imagesmall
 	for peak in peaks:
 		scale = scaledimg[peak[0]][peak[1]]
 		subbox = select_box(mask, peak[0], peak[1], scale, ZIA_SCALE)
 		#print(subbox.shape)
 		if subbox.shape[0] <= MIN_ZIA_SIZE:
 			continue
-		subbox = np.transpose(cv2.resize(ziaimg, subbox.shape, cv2.INTER_CUBIC))
+		subbox = np.transpose(cv2.resize(imageimg, subbox.shape, cv2.INTER_CUBIC))
 		mask = replace_box(mask, subbox, peak[0], peak[1], scale, ZIA_SCALE)
 
 	img = mask * img
