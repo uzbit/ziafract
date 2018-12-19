@@ -212,14 +212,15 @@ def fuse(points, scales, multiplier):
 	return np.array(ret)
 
 
-MIN_FOR_PEAK = 0.2
+MIN_FOR_PEAK = 0.4
 RADIAL_MULTIPLIER = 50
-MIN_ZIA_SIZE = 20
-ZIA_SCALE = 200
+MIN_ZIA_SIZE = 35
+ZIA_SCALE = 150
 
 def place_zias(img, size, ziasmall, ziabig):
 	blurx, blury = int(size[0]/200.), int(size[0]/200.)
 	img = cv2.blur(img, (blurx, blury))
+	img = np.sqrt(img)
 
 	def read_zia(path):
 		ziaimg = cv2.imread(path, cv2.IMREAD_GRAYSCALE)
@@ -238,6 +239,8 @@ def place_zias(img, size, ziasmall, ziabig):
 		scale = scaledimg[peak[0]][peak[1]]
 		peakscales.append(scale)
 	peaks = fuse(peaks, peakscales, RADIAL_MULTIPLIER)
+	if len(peaks) % 2 == 1:
+		peaks = peaks[:-1]
 
 	fig = plt.figure()
 	plt.imshow(img, cmap='gray')
@@ -271,18 +274,30 @@ def place_zias(img, size, ziasmall, ziabig):
 	for peak in peaks:
 		scale = scaledimg[peak[0]][peak[1]]
 		subbox = select_box(mask, peak[0], peak[1], scale, ZIA_SCALE)
-		subbox = np.transpose(cv2.resize(ziaimg, subbox.shape, cv2.INTER_AREA))
+		#print(subbox.shape)
+		if subbox.shape[0] <= MIN_ZIA_SIZE:
+			continue
+		subbox = np.transpose(cv2.resize(ziaimg, subbox.shape, cv2.INTER_CUBIC))
 		mask = replace_box(mask, subbox, peak[0], peak[1], scale, ZIA_SCALE)
 
 	img = mask * img
+	# print(np.max(img))
+	# print(np.std(img[img>0]))
+	# print(np.min(img[img>0]))
+
+	img = np.power(img, 0.3)
 	fig, ax = plt.subplots()
 	plt.axis('off')
 	plt.tight_layout()
 	ax.set_aspect('equal')
-	plt.imshow(img, cmap='hot')
-	plt.savefig('juliaziafract.png', dpi=1000)
+	# print(np.max(img))
+	# print(np.std(img[img>0]))
+	# print(np.min(img[img>0]))
+	# # for row in img:
+	# 	print(row)
+	plt.imshow(img, cmap='gray')
+	plt.savefig('juliaziafract.png', dpi=size[0])
 	plt.show()
-	sys.exit(1)
 	return img
 
 def threshold_img(img, cutoff):
