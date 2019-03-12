@@ -4,6 +4,7 @@
 
 import matplotlib
 import matplotlib.pyplot as plt
+import matplotlib.animation as animation
 import numpy as np
 from zia import Zia
 
@@ -25,6 +26,12 @@ def fract(xpts, ypts, scale):
         newypts.append(ypts1)
     return fract(np.array(newxpts).flatten(), np.array(newypts).flatten(), SCALE_STEPDOWN*scale)
 
+def animate(i, ax):
+    st,en = -3.*np.power(2., -i/40.) + 1-np.power(2., -i*SCALE_STEPDOWN), 3.*np.power(2., -i/40.) + 1-np.power(2., -i*SCALE_STEPDOWN)
+    ax.set_xlim(st,en)
+    ax.set_ylim(st,en)
+    return ax,
+
 def main():
     ziaObj = Zia(1.0, 2.0, 1, rayN=5, sunN=4)
     xpts, ypts = ziaObj.genZia()
@@ -43,7 +50,9 @@ def main():
         subinds = list(range(len(xpts)))
 
     plt.scatter(xpts[subinds], ypts[subinds], s=1, color='black')
-    plt.savefig('ziafract.pdf')
+
+    ani = animation.FuncAnimation(fig, animate, fargs=(ax,),
+        frames=range(0, 500), interval=30, blit=False)
     plt.show()
 
 
