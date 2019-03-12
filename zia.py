@@ -4,6 +4,7 @@
 
 import matplotlib
 import matplotlib.pyplot as plt
+import matplotlib.animation as animation
 import numpy as np
 
 class Zia(object):
@@ -111,14 +112,11 @@ class Zia(object):
         plt.show()
 
 
-import matplotlib.animation as animation
-
 def animate(i, ax):
     st,en = -3.*np.power(10., -i/40.), 3.*np.power(10., -i/40.)
     ax.set_xlim(st,en)
     ax.set_ylim(st,en)
     return ax,
-
 
 def main():
     fig, ax = plt.subplots()
