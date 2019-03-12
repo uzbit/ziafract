@@ -45,8 +45,7 @@ class Zia(object):
 
         xpts, ypts = list(), list()
         for k, ray in enumerate(rays):
-            #N = self._rN + (1 if k in [1, 2] else 0)
-            N = self._rN + (1 if k in [1, 2] else 0)
+            N = self._rN
             dx = (ray[1][0] - ray[0][0])/float(N)
             dy = (ray[1][1] - ray[0][1])/float(N)
             for i in range(N):
@@ -127,15 +126,16 @@ def main():
     for i in range(12):
         zia = Zia(1, 2, np.power(10., -i/2.), npts=2000)
         xpts, ypts = zia.genZia()
-        plt.scatter(xpts, ypts, s=3, color=colors[i%len(colors)])
+        plt.scatter(xpts, ypts, s=20, color=colors[i%len(colors)])
 
     ani = animation.FuncAnimation(fig, animate, fargs=(ax,),
-        frames=range(30, 150), interval=20, blit=False)
+        frames=range(30, 150), interval=30, blit=False)
     plt.show()
 
     Writer = animation.writers['ffmpeg']
     writer = Writer(fps=30, metadata=dict(artist='Matplotlib'), bitrate=1800)
     ani.save('infzia.mp4', writer=writer, savefig_kwargs={'facecolor':'black'})
+    ani.save('infzia.gif', writer='imagemagick', savefig_kwargs={'facecolor':'black'})
 
 
 if __name__ == '__main__':
