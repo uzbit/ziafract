@@ -113,12 +113,11 @@ class Zia(object):
 
 import matplotlib.animation as animation
 
-def animate(i, ax, fig):
-    # update the start/end point, and the data shown in lower subplot
+def animate(i, ax):
     st,en = -3.*np.power(10., -i/40.), 3.*np.power(10., -i/40.)
     ax.set_xlim(st,en)
     ax.set_ylim(st,en)
-    return fig,
+    return ax,
 
 
 def main():
@@ -132,8 +131,8 @@ def main():
         xpts, ypts = zia.genZia()
         plt.scatter(xpts, ypts, s=3, color=colors[i%len(colors)])
 
-    ani = animation.FuncAnimation(fig, animate, fargs=(ax, fig),
-        frames=120, interval=20)#, blit=True)
+    ani = animation.FuncAnimation(fig, animate, fargs=(ax,),
+        frames=range(30, 150), interval=20, blit=False)
     plt.show()
 
     Writer = animation.writers['ffmpeg']
