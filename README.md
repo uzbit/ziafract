@@ -2,7 +2,7 @@ A small sandbox for playing around with the [Zia symbol](https://en.wikipedia.or
 
 Created with image_fractal.py
 <p align="center">
-<img src="/juliaziafract.gif">
+<img src="/juliaziafract.png">
 </p>
 
 Created with zia.py
