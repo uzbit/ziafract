@@ -36,8 +36,8 @@ DEFAULT_ZOOM = "1"
 DEFAULT_CENTER = "0x0"
 DEFAULT_COLORMAP = "gray"
 
-DEFAULT_SMALL_IMG = 'zia_small.png'
-DEFAULT_LARGE_IMG = 'zia_big.png'
+DEFAULT_SMALL_IMG = 'imgs/zia_small.png'
+DEFAULT_LARGE_IMG = 'imgs/zia_big.png'
 
 # best constants so far:
 #  -0.75472 -0.11792 j
@@ -296,7 +296,7 @@ def place_images(img, size, imagesmall, imagebig):
 	# # for row in img:
 	# 	print(row)
 	plt.imshow(img, cmap='gray')
-	plt.savefig('juliaziafract.png', dpi=size[0])
+	plt.savefig('imgs/juliaziafract.png', dpi=size[0])
 	plt.show()
 	return img
 
