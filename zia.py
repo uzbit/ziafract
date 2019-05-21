@@ -2,7 +2,6 @@
 # License is MIT, see COPYING.txt for more details.
 # @author: Theodore John McCormack
 
-import matplotlib.pyplot as plt
 import numpy as np
 
 class Zia(object):
@@ -82,6 +81,7 @@ class Zia(object):
 
     @staticmethod
     def getImage(N, M, show=True):
+        import matplotlib.pyplot as plt
         zia = Zia(0.25, 0.5, 1, npts=500)
         xpts, ypts = zia.genZia()
         img = np.empty((N, M))
@@ -98,6 +98,7 @@ class Zia(object):
         return img
 
     def draw(self):
+        import matplotlib.pyplot as plt
         fig, ax = plt.subplots()
         fig.set_size_inches(1, 1)
         xpts, ypts = self.genZia()
