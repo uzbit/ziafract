@@ -5,7 +5,7 @@ Created with image_fractal.py
 <img src="/imgs/juliaziafract.png?raw=true">
 </p>
 
-Created with zia.py
+Created with ziazoom.py
 <p align="center">
 <img src="/imgs/infzia.gif">
 </p>
