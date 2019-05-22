@@ -14,7 +14,7 @@ class Zia3D(GLBase):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.zia = Zia(1, 2, 1, npts=1000)
+        self.zia = Zia(1, 2, 1, npts=500)
         xpts, ypts = self.zia.genZia()
         zpts = np.zeros(xpts.shape)
         self.xpts = xpts
@@ -31,11 +31,14 @@ class Zia3D(GLBase):
         glLoadIdentity()					# Reset The View 
 
         glTranslatef(*self.center)
-        glRotatef(self.rotateV, 1.0, 0, 0)
-        self.rotateV += 1.0
+        glRotatef(self.rotateV, 1.0, .5, 0)
+        self.rotateV += 10.0
         size = self.size
+        colors = [1.0, 1.0, 1.0]
+
         for xpt, ypt, zpt in zip(self.xpts, self.ypts, self.zpts):
-            glColor3f(abs(xpt), abs(ypt), abs(zpt))            # Bluish shade
+            cols = np.array([abs(xpt), abs(ypt), abs(zpt)])
+            glColor3f(*cols)
             #glRotatef(*self.rotate)      # Rotate
             glPushMatrix()
             glTranslatef(xpt, ypt, zpt)
@@ -76,6 +79,7 @@ class Zia3D(GLBase):
         #  since this is double buffered, swap the buffers to display what just got drawn. 
         glutSwapBuffers()
         self.rotate[0] += 0.05
+        self.framerate()
         #self.rotate[1] += 0.1
         #self.rotate[2] += 0.1
         #self.rotate[3] += 0.1

@@ -2,6 +2,7 @@
 from OpenGL.GL import *
 from OpenGL.GLUT import *
 from OpenGL.GLU import *
+import time
 import sys
 
 
@@ -17,6 +18,8 @@ class GLBase(object):
         self.height = height
         self.window = 0
         self.init = False
+        self.t0 = time.time()
+        self.frames = 0
         
     # A general OpenGL initialization function.  Sets all of the initial parameters. 
     def initGL(self):				# We call this right after our OpenGL window is created.
@@ -100,6 +103,7 @@ class GLBase(object):
 
         #  since this is double buffered, swap the buffers to display what just got drawn. 
         glutSwapBuffers()
+        self.framerate()
 
     # The function called whenever a key is pressed. Note the use of Python tuples to pass in: (key, x, y)  
     def keyPressed(*args):
@@ -107,6 +111,16 @@ class GLBase(object):
         # If escape is pressed, kill everything.
         if args[1] == GLBase.ESCAPE:
             sys.exit()
+
+    def framerate(self):
+        t = time.time()
+        self.frames += 1
+        if t - self.t0 >= 5.0:
+            seconds = t - self.t0
+            fps = self.frames/seconds
+            print(f"{self.frames} frames in {seconds:3.1f} seconds = {fps:6.3f} FPS")
+            self.t0 = t
+            self.frames = 0
 
     def run(self):
         glutInit(sys.argv)
