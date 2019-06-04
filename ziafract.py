@@ -12,20 +12,9 @@ NUM_DEPTH = 2
 SCALE_STEPDOWN = 0.01
 INIT_SCALE = 0.05
 SCALE_DEPTH = INIT_SCALE * np.power(SCALE_STEPDOWN, NUM_DEPTH)
-MAX_PLT_PTS = None #100000
-FRAMES = 200
+MAX_PLT_PTS = 100000
+FRAMES = 100
 
-# depth0 center at 0.0, 0.0
-# depth1 centerx at 0.7
-# depth2 centerx at 0.7 + 0.7*SCALE_STEPDOWN
-# depth3 centerx at 0.7 + 0.7*SCALE_STEPDOWN + 0.7*SCALE_STEPDOWN*SCALE_STEPDOWN
-#
-# depthN = posx*(1*min(1, depth)+SCALE_STEPDOWN*min(1, depth)+SCALE_STEPDOWN^2+...SCALE_STEPDOWN^N)
-# at depth1 i should be at 1*FRAMES/NUM_DEPTH and shiftx,y should be 0.7, 0.7
-# at depth2 i should be at 2*FRAMES/NUM_DEPTH and shiftx,y should be 0.7, 0.7
-#
-# i = depth*FRAMES/NUM_DEPTH
-# depth = i*NUM_DEPTH/FRAMES
 
 def fract(xpts, ypts, scale):
     print("Calculating for scale = %f, depth = %f, npts = %d..." % (scale, SCALE_DEPTH, len(xpts)))
@@ -46,8 +35,7 @@ def animate(i, ax):
     dpf = 1.0/FRAMES
     st = -3.*dpf*(FRAMES-i)
     en =  3.*dpf*(FRAMES-i)
-    depth = (float(i)*NUM_DEPTH/FRAMES)
-
+  
     def getShift(scale, shift):
         if scale <= SCALE_DEPTH:
             return shift
@@ -82,12 +70,12 @@ def main():
 
     ani = animation.FuncAnimation(fig, animate, fargs=(ax,),
         frames=range(0, FRAMES), interval=30, blit=False)
-    #plt.show()
+    plt.show()
 
-    Writer = animation.writers['ffmpeg']
-    writer = Writer(fps=30, metadata=dict(artist='Matplotlib'), bitrate=1800)
-    ani.save('infzia2.mp4', writer=writer, savefig_kwargs={'facecolor':'white'})
-    ani.save('infzia2.gif', writer='imagemagick', savefig_kwargs={'facecolor':'white'})
+    # Writer = animation.writers['ffmpeg']
+    # writer = Writer(fps=30, metadata=dict(artist='Matplotlib'), bitrate=1800)
+    # ani.save('infzia2.mp4', writer=writer, savefig_kwargs={'facecolor':'white'})
+    # ani.save('infzia2.gif', writer='imagemagick', savefig_kwargs={'facecolor':'white'})
 
 
 

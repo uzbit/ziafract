@@ -10,6 +10,43 @@ from OpenGL.GLU import *
 import numpy as np
 import random
 
+
+def drawCube(xpt, ypt, zpt, size):
+    glPushMatrix()
+    glTranslatef(xpt, ypt, zpt)
+    glBegin(GL_QUADS)                   # Start drawing a 4 sided polygon
+    glVertex3f( size, size,-size);		# Top Right Of The Quad (Top)
+    glVertex3f(-size, size,-size);		# Top Left Of The Quad (Top)
+    glVertex3f(-size, size, size);		# Bottom Left Of The Quad (Top)
+    glVertex3f( size, size, size);		# Bottom Right Of The Quad (Top)
+
+    glVertex3f( size,-size, size);		# Top Right Of The Quad (Bottom)
+    glVertex3f(-size,-size, size);		# Top Left Of The Quad (Bottom)
+    glVertex3f(-size,-size,-size);		# Bottom Left Of The Quad (Bottom)
+    glVertex3f( size,-size,-size);		# Bottom Right Of The Quad (Bottom)
+
+    glVertex3f( size, size, size);		# Top Right Of The Quad (Front)
+    glVertex3f(-size, size, size);		# Top Left Of The Quad (Front)
+    glVertex3f(-size,-size, size);		# Bottom Left Of The Quad (Front)
+    glVertex3f( size,-size, size);		# Bottom Right Of The Quad (Front)
+
+    glVertex3f( size,-size,-size);		# Bottom Left Of The Quad (Back)
+    glVertex3f(-size,-size,-size);		# Bottom Right Of The Quad (Back)
+    glVertex3f(-size, size,-size);		# Top Right Of The Quad (Back)
+    glVertex3f( size, size,-size);		# Top Left Of The Quad (Back)
+
+    glVertex3f(-size, size, size);		# Top Right Of The Quad (Left)
+    glVertex3f(-size, size,-size);		# Top Left Of The Quad (Left)
+    glVertex3f(-size,-size,-size);		# Bottom Left Of The Quad (Left)
+    glVertex3f(-size,-size, size);		# Bottom Right Of The Quad (Left)
+
+    glVertex3f( size, size,-size);		# Top Right Of The Quad (Right)
+    glVertex3f( size, size, size);		# Top Left Of The Quad (Right)
+    glVertex3f( size,-size, size);		# Bottom Left Of The Quad (Right)
+    glVertex3f( size,-size,-size);		# Bottom Right Of The Quad (Right)
+    glEnd()           
+    glPopMatrix()
+
 class Zia3D(GLBase):
 
     def __init__(self, *args, **kwargs):
@@ -21,69 +58,34 @@ class Zia3D(GLBase):
         self.ypts = ypts
         self.zpts = zpts  
         self.center = np.array([0.0, 0.0, -8.0])
-        self.rotate = np.array([5.0, 0.0, 1.0, 0.0])
+        self.rotate = np.array([0.0, 0.0, 1.0, 0.0])
+        self.dRotate = np.array([0.05, 0.0, 0.0, 0.0])
         self.size = 0.05  
         self.rotateV = 0.1
-
+        
     def drawGLScene(self):
         # Clear The Screen And The Depth Buffer
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
         glLoadIdentity()					# Reset The View 
 
         glTranslatef(*self.center)
-        glRotatef(self.rotateV, 1.0, .5, 0)
-        self.rotateV += 10.0
+        #glRotatef(self.rotateV, 1.0, .5, 0)
+        #self.rotateV += 4.0
         size = self.size
-        colors = [1.0, 1.0, 1.0]
-
+        
         for xpt, ypt, zpt in zip(self.xpts, self.ypts, self.zpts):
             cols = np.array([abs(xpt), abs(ypt), abs(zpt)])
             glColor3f(*cols)
-            #glRotatef(*self.rotate)      # Rotate
-            glPushMatrix()
-            glTranslatef(xpt, ypt, zpt)
-            glBegin(GL_QUADS)                   # Start drawing a 4 sided polygon
-            glVertex3f( size, size,-size);		# Top Right Of The Quad (Top)
-            glVertex3f(-size, size,-size);		# Top Left Of The Quad (Top)
-            glVertex3f(-size, size, size);		# Bottom Left Of The Quad (Top)
-            glVertex3f( size, size, size);		# Bottom Right Of The Quad (Top)
-           
-            glVertex3f( size,-size, size);		# Top Right Of The Quad (Bottom)
-            glVertex3f(-size,-size, size);		# Top Left Of The Quad (Bottom)
-            glVertex3f(-size,-size,-size);		# Bottom Left Of The Quad (Bottom)
-            glVertex3f( size,-size,-size);		# Bottom Right Of The Quad (Bottom)
-
-            glVertex3f( size, size, size);		# Top Right Of The Quad (Front)
-            glVertex3f(-size, size, size);		# Top Left Of The Quad (Front)
-            glVertex3f(-size,-size, size);		# Bottom Left Of The Quad (Front)
-            glVertex3f( size,-size, size);		# Bottom Right Of The Quad (Front)
-
-            glVertex3f( size,-size,-size);		# Bottom Left Of The Quad (Back)
-            glVertex3f(-size,-size,-size);		# Bottom Right Of The Quad (Back)
-            glVertex3f(-size, size,-size);		# Top Right Of The Quad (Back)
-            glVertex3f( size, size,-size);		# Top Left Of The Quad (Back)
-
-            glVertex3f(-size, size, size);		# Top Right Of The Quad (Left)
-            glVertex3f(-size, size,-size);		# Top Left Of The Quad (Left)
-            glVertex3f(-size,-size,-size);		# Bottom Left Of The Quad (Left)
-            glVertex3f(-size,-size, size);		# Bottom Right Of The Quad (Left)
-
-            glVertex3f( size, size,-size);		# Top Right Of The Quad (Right)
-            glVertex3f( size, size, size);		# Top Left Of The Quad (Right)
-            glVertex3f( size,-size, size);		# Bottom Left Of The Quad (Right)
-            glVertex3f( size,-size,-size);		# Bottom Right Of The Quad (Right)
-            glEnd()           
-            glPopMatrix()
+            glRotatef(*self.rotate)      # Rotate
+            drawCube(xpt, ypt, zpt, size)
             
-        
         #  since this is double buffered, swap the buffers to display what just got drawn. 
         glutSwapBuffers()
-        self.rotate[0] += 0.05
+        if np.linalg.norm(self.rotate) > 10.0:
+            self.dRotate *= -1
+        self.rotate += self.dRotate
         self.framerate()
-        #self.rotate[1] += 0.1
-        #self.rotate[2] += 0.1
-        #self.rotate[3] += 0.1
-
+        
 
 def main():
     zia3d = Zia3D("Zia3D", 640, 480)
