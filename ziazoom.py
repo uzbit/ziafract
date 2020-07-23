@@ -18,7 +18,7 @@ def main():
     ax.set_aspect('equal')
     fig.set_facecolor((0, 0, 0))
     plt.axis('off')
-    colors = ['red', 'yellow', 'teal']
+    colors = ['red', 'yellow', 'turquoise']
     for i in range(12):
         zia = Zia(1, 2, np.power(10., -i/2.), npts=2000)
         xpts, ypts = zia.genZia()
