@@ -16,22 +16,29 @@ def animate(i, ax):
 def main():
     fig, ax = plt.subplots()
     ax.set_aspect('equal')
-    fig.set_facecolor((0, 0, 0))
+    fig.set_size_inches(20, 20)
+    fig.set_facecolor((0, 0, 0, 0))
     plt.axis('off')
-    colors = ['red', 'yellow', 'teal']
-    for i in range(12):
-        zia = Zia(1, 2, np.power(10., -i/2.), npts=2000)
+    colors = ['red', 'yellow', 'turquoise']
+    sizes = [400, 100, 10, 1, 1, 1, 1]
+    radius = 1.1 # the 0.1 if for the size of the dots to be inset
+    ray = 2
+    for i in range(6, -1, -1):
+        zia = Zia(radius, ray, np.power(radius+ray, float(-i)), npts=2000)
         xpts, ypts = zia.genZia()
-        plt.scatter(xpts, ypts, s=20, color=colors[i%len(colors)])
+        size = sizes[i]
+        plt.scatter(xpts, ypts, s=size, color=colors[i%len(colors)])
 
-    ani = animation.FuncAnimation(fig, animate, fargs=(ax,),
-        frames=range(30, 150), interval=30, blit=False)
+    # ani = animation.FuncAnimation(fig, animate, fargs=(ax,),
+    #      frames=range(30, 150), interval=30, blit=False)
+    plt.savefig("zia.png", facecolor=None, edgecolor=None, transparent=True, dpi=100)
     plt.show()
+    
 
-    Writer = animation.writers['ffmpeg']
-    writer = Writer(fps=30, metadata=dict(artist='Matplotlib'), bitrate=1800)
-    ani.save('infzia.mp4', writer=writer, savefig_kwargs={'facecolor':'black'})
-    ani.save('infzia.gif', writer='imagemagick', savefig_kwargs={'facecolor':'black'})
+    # Writer = animation.writers['ffmpeg']
+    # writer = Writer(fps=30, metadata=dict(artist='Matplotlib'), bitrate=1800)
+    # ani.save('infzia.mp4', writer=writer, savefig_kwargs={'facecolor':'black'})
+    # ani.save('infzia.gif', writer='imagemagick', savefig_kwargs={'facecolor':'black'})
 
 
 if __name__ == '__main__':
