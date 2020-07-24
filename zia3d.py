@@ -54,7 +54,7 @@ class Zia3D(GLBase):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.zia = Zia(1, 2, 1, npts=500)
+        self.zia = Zia(1, 2, 1, npts=1000)
         xpts, ypts = self.zia.genZia()
         zpts = np.zeros(xpts.shape)
         self.xpts = xpts
@@ -68,7 +68,7 @@ class Zia3D(GLBase):
         self.time = 0
         
     def drawGLScene(self):
-        self.time += 0.01
+        self.time += 0.1
         # Clear The Screen And The Depth Buffer
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
         glLoadIdentity()					# Reset The View 
@@ -79,19 +79,19 @@ class Zia3D(GLBase):
         size = self.size
         
         for xpt, ypt, zpt in zip(self.xpts, self.ypts, self.zpts):
-            cols = np.array(np.sin(self.time * self.rotate[:-1]))
+            cols = np.array(self.dRotate[:-1]*np.sin(self.time * self.rotate[:-1]))
             glColor3f(*cols)
             glRotatef(*self.rotate)      # Rotate
             drawCube(xpt, ypt, zpt, size)
             norm = np.linalg.norm([xpt, ypt, zpt])
-            if random.random() < 0.7: 
+            if random.random() < 0.25: 
                 self.dRotate = np.array([(1-random.random())/norm, (1-random.random())/norm, (1-random.random())/norm, 1-random.random()])
             
         #  since this is double buffered, swap the buffers to display what just got drawn. 
         glutSwapBuffers()
-        if random.random() < 0.5: 
+        if random.random() < 0.7: 
             self.rotate = np.array([0., 0. ,0., 0.])
-        self.rotate += self.dRotate
+        self.rotate += self.time*self.dRotate
         self.framerate()
         
 

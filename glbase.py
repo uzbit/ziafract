@@ -100,7 +100,6 @@ class GLBase(object):
         self.rtri += 1.0                  # Increase The Rotation Variable For The Triangle
         self.rquad -= 1.0                 # Decrease The Rotation Variable For The Quad
 
-
         #  since this is double buffered, swap the buffers to display what just got drawn. 
         glutSwapBuffers()
         self.framerate()
@@ -113,6 +112,7 @@ class GLBase(object):
             sys.exit()
 
     def framerate(self):
+        time.sleep(0.01)
         t = time.time()
         self.frames += 1
         if t - self.t0 >= 5.0:
