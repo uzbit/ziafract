@@ -89,7 +89,7 @@ class Zia3D(GLBase):
             
         #  since this is double buffered, swap the buffers to display what just got drawn. 
         glutSwapBuffers()
-        if random.random() < 0.1: 
+        if random.random() < 0.5: 
             self.rotate = np.array([0., 0. ,0., 0.])
         self.rotate += self.dRotate
         self.framerate()
