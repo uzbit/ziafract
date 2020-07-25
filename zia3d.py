@@ -74,24 +74,28 @@ class Zia3D(GLBase):
         glLoadIdentity()					# Reset The View 
 
         glTranslatef(*self.center)
-        #glRotatef(self.rotateV, 1.0, .5, 0)
-        #self.rotateV += 4.0
-        size = self.size
         
+        size = self.size
+        cols = [random.random(), random.random(), random.random()]
+
         for xpt, ypt, zpt in zip(self.xpts, self.ypts, self.zpts):
-            cols = np.array(self.dRotate[:-1]*np.sin(self.time * self.rotate[:-1]))
-            glColor3f(*cols)
-            glRotatef(*self.rotate)      # Rotate
-            drawCube(xpt, ypt, zpt, size)
             norm = np.linalg.norm([xpt, ypt, zpt])
-            if random.random() < 0.25: 
-                self.dRotate = np.array([(1-random.random())/norm, (1-random.random())/norm, (1-random.random())/norm, 1-random.random()])
             
+            glColor3f(*cols)
+            glRotatef(*self.rotate)      
+            drawCube(xpt, ypt, zpt, size)
+            
+        if random.random() < 0.1: 
+            self.dRotate = 0.2*np.array([(1-2*random.random())/norm, (1-2*random.random())/norm, (1-2*random.random())/norm, 1-2*random.random()])
+            cols = self.time*np.array([random.random(), random.random(), random.random()])
+        
+        if self.time > 100:
+            self.time = 0
+
         #  since this is double buffered, swap the buffers to display what just got drawn. 
         glutSwapBuffers()
-        if random.random() < 0.7: 
-            self.rotate = np.array([0., 0. ,0., 0.])
-        self.rotate += self.time*self.dRotate
+        
+        self.rotate = self.time*self.dRotate
         self.framerate()
         
 
