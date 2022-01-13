@@ -109,10 +109,9 @@ class GLBase(object):
         #print(args[1])
         # If escape is pressed, kill everything.
         if args[1] == GLBase.ESCAPE:
-            sys.exit()
+            sys.exit(0)
 
     def framerate(self):
-        time.sleep(0.01)
         t = time.time()
         self.frames += 1
         if t - self.t0 >= 5.0:

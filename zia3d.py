@@ -12,7 +12,7 @@ import random
 import time
 
 
-random.seed(time.time())
+random.seed()
 
 def drawCube(xpt, ypt, zpt, size):
     glPushMatrix()
@@ -61,8 +61,8 @@ class Zia3D(GLBase):
         self.ypts = ypts
         self.zpts = zpts  
         self.center = np.array([0.0, 0.0, -8.0])
-        self.rotate = np.array([0.1, 0.0, 1.0, 0.0])
-        self.dRotate = np.array([1-random.random(), 1-random.random(), 1-random.random(), 1-random.random()])
+        self.rotate = np.array([0.0, 0.0, 0.0, 1.0])
+        self.dRotate = np.array([1.0, 0, 0, 0])
         self.size = 0.05  
         self.rotateV = 0.1
         self.time = 0
@@ -74,24 +74,38 @@ class Zia3D(GLBase):
         glLoadIdentity()					# Reset The View 
 
         glTranslatef(*self.center)
-        #glRotatef(self.rotateV, 1.0, .5, 0)
-        #self.rotateV += 4.0
         size = self.size
-        
+        arr = np.array([self.xpts, self.ypts])
+        arr = arr[np.argsort(arr[:, 0])]
+        self.xpts = arr[0, :]
+        self.ypts = arr[1, :]
+
         for xpt, ypt, zpt in zip(self.xpts, self.ypts, self.zpts):
-            cols = np.array(self.dRotate[:-1]*np.sin(self.time * self.rotate[:-1]))
+            dist = np.sqrt(xpt*xpt + ypt*ypt + zpt*zpt)
+            cols = np.abs(np.array([xpt, ypt, zpt])) #np.array(self.dRotate[:-1])
+            rotate = self.rotate #/ dist
+            glPushMatrix()
+            glTranslatef(*self.center)
+            glColor3f(1, 1, 1)
+            drawCube(0, 0, 0, size)
+            glPopMatrix()
+            
+            glPushMatrix()
+            glTranslatef(0, 0, -5*np.sin(self.time))
+            glRotatef(*rotate)      # Rotate
             glColor3f(*cols)
-            glRotatef(*self.rotate)      # Rotate
             drawCube(xpt, ypt, zpt, size)
-            norm = np.linalg.norm([xpt, ypt, zpt])
-            if random.random() < 0.25: 
-                self.dRotate = np.array([(1-random.random())/norm, (1-random.random())/norm, (1-random.random())/norm, 1-random.random()])
+            glPopMatrix()
+
+            #if random.random() < 0.5: 
+            #    norm = np.linalg.norm([xpt, ypt, zpt])
+            #    self.dRotate = np.array([(1-random.random())/norm, (1-random.random())/norm, (1-random.random())/norm, 1-random.random()])
             
         #  since this is double buffered, swap the buffers to display what just got drawn. 
         glutSwapBuffers()
-        if random.random() < 0.7: 
-            self.rotate = np.array([0., 0. ,0., 0.])
-        self.rotate += self.time*self.dRotate
+        
+        self.rotate += self.dRotate
+        
         self.framerate()
         
 
