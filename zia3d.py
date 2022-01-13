@@ -122,26 +122,7 @@ class Zia3D(GLBase):
             drawCube(xpt, ypt, zpt, size)
             glPopMatrix()
 
-            # if random.random() < 0.5:
-            #    norm = np.linalg.norm([xpt, ypt, zpt])
-            #    self.dRotate = np.array([(1-random.random())/norm, (1-random.random())/norm, (1-random.random())/norm, 1-random.random()])
-
-        if random.random() < 0.1:
-            self.dRotate = 0.2 * np.array(
-                [
-                    (1 - 2 * random.random()) / norm,
-                    (1 - 2 * random.random()) / norm,
-                    (1 - 2 * random.random()) / norm,
-                    1 - 2 * random.random(),
-                ]
-            )
-            cols = self.time * np.array(
-                [random.random(), random.random(), random.random()]
-            )
-
-        if self.time > 100:
-            self.time = 0
-
+        
         #  since this is double buffered, swap the buffers to display what just got drawn.
         glutSwapBuffers()
 
