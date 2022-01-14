@@ -33,9 +33,10 @@ class GLBase(object):
         glMatrixMode(GL_PROJECTION)
         glLoadIdentity()  # Reset The Projection Matrix
         # Calculate The Aspect Ratio Of The Window
-        gluPerspective(45.0, float(self.width) / float(self.height), 0.1, 100.0)
-
         glMatrixMode(GL_MODELVIEW)
+        glLoadIdentity()  # Reset The Projection Matrix
+
+        gluPerspective(45.0, float(self.width) / float(self.height), 0.1, 100.0)
 
     # The function called when our window is resized (which shouldn't happen if you enable fullscreen, below)
     def reSizeGLScene(self, width, height):
