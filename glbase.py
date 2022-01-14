@@ -1,9 +1,194 @@
 from OpenGL.GL import *
 from OpenGL.GLUT import *
 from OpenGL.GLU import *
+import numpy as np
 import time
 import sys
 
+
+# This cube was taken from
+# http://www.opengl-tutorial.org/beginners-tutorials/tutorial-4-a-colored-cube/
+CUBE = [
+    -1.0,
+    -1.0,
+    -1.0,  # triangle 1 : begin
+    -1.0,
+    -1.0,
+    1.0,
+    -1.0,
+    1.0,
+    1.0,  # triangle 1 : end
+    1.0,
+    1.0,
+    -1.0,  # triangle 2 : begin
+    -1.0,
+    -1.0,
+    -1.0,
+    -1.0,
+    1.0,
+    -1.0,  # triangle 2 : end
+    1.0,
+    -1.0,
+    1.0,
+    -1.0,
+    -1.0,
+    -1.0,
+    1.0,
+    -1.0,
+    -1.0,
+    1.0,
+    1.0,
+    -1.0,
+    1.0,
+    -1.0,
+    -1.0,
+    -1.0,
+    -1.0,
+    -1.0,
+    -1.0,
+    -1.0,
+    -1.0,
+    -1.0,
+    1.0,
+    1.0,
+    -1.0,
+    1.0,
+    -1.0,
+    1.0,
+    -1.0,
+    1.0,
+    -1.0,
+    -1.0,
+    1.0,
+    -1.0,
+    -1.0,
+    -1.0,
+    -1.0,
+    1.0,
+    1.0,
+    -1.0,
+    -1.0,
+    1.0,
+    1.0,
+    -1.0,
+    1.0,
+    1.0,
+    1.0,
+    1.0,
+    1.0,
+    -1.0,
+    -1.0,
+    1.0,
+    1.0,
+    -1.0,
+    1.0,
+    -1.0,
+    -1.0,
+    1.0,
+    1.0,
+    1.0,
+    1.0,
+    -1.0,
+    1.0,
+    1.0,
+    1.0,
+    1.0,
+    1.0,
+    1.0,
+    -1.0,
+    -1.0,
+    1.0,
+    -1.0,
+    1.0,
+    1.0,
+    1.0,
+    -1.0,
+    1.0,
+    -1.0,
+    -1.0,
+    1.0,
+    1.0,
+    1.0,
+    1.0,
+    1.0,
+    -1.0,
+    1.0,
+    1.0,
+    1.0,
+    -1.0,
+    1.0,
+]
+
+def drawCube(xpt, ypt, zpt, size):
+    # Old method of drawing, each call is executed on the CPU -> slow
+    glPushMatrix()
+    glTranslatef(xpt, ypt, zpt)
+    glBegin(GL_QUADS)  # Start drawing a 4 sided polygon
+    glVertex3f(size, size, -size)
+    # Top Right Of The Quad (Top)
+    glVertex3f(-size, size, -size)
+    # Top Left Of The Quad (Top)
+    glVertex3f(-size, size, size)
+    # Bottom Left Of The Quad (Top)
+    glVertex3f(size, size, size)
+    # Bottom Right Of The Quad (Top)
+
+    glVertex3f(size, -size, size)
+    # Top Right Of The Quad (Bottom)
+    glVertex3f(-size, -size, size)
+    # Top Left Of The Quad (Bottom)
+    glVertex3f(-size, -size, -size)
+    # Bottom Left Of The Quad (Bottom)
+    glVertex3f(size, -size, -size)
+    # Bottom Right Of The Quad (Bottom)
+
+    glVertex3f(size, size, size)
+    # Top Right Of The Quad (Front)
+    glVertex3f(-size, size, size)
+    # Top Left Of The Quad (Front)
+    glVertex3f(-size, -size, size)
+    # Bottom Left Of The Quad (Front)
+    glVertex3f(size, -size, size)
+    # Bottom Right Of The Quad (Front)
+
+    glVertex3f(size, -size, -size)
+    # Bottom Left Of The Quad (Back)
+    glVertex3f(-size, -size, -size)
+    # Bottom Right Of The Quad (Back)
+    glVertex3f(-size, size, -size)
+    # Top Right Of The Quad (Back)
+    glVertex3f(size, size, -size)
+    # Top Left Of The Quad (Back)
+
+    glVertex3f(-size, size, size)
+    # Top Right Of The Quad (Left)
+    glVertex3f(-size, size, -size)
+    # Top Left Of The Quad (Left)
+    glVertex3f(-size, -size, -size)
+    # Bottom Left Of The Quad (Left)
+    glVertex3f(-size, -size, size)
+    # Bottom Right Of The Quad (Left)
+
+    glVertex3f(size, size, -size)
+    # Top Right Of The Quad (Right)
+    glVertex3f(size, size, size)
+    # Top Left Of The Quad (Right)
+    glVertex3f(size, -size, size)
+    # Bottom Left Of The Quad (Right)
+    glVertex3f(size, -size, -size)
+    # Bottom Right Of The Quad (Right)
+    glEnd()
+    glPopMatrix()
+
+def getCubeArray(xpt, ypt, zpt, size):
+    # scale by size
+    arr = size * np.array(list(CUBE))
+    # translate by coordinate
+    for i in range(0, len(CUBE), 3):
+        arr[0 + i] += xpt
+        arr[1 + i] += ypt
+        arr[2 + i] += zpt
+    return np.array(arr)
 
 class GLBase(object):
     # Some api in the chain is translating the keystrokes to this octal string
@@ -113,6 +298,7 @@ class GLBase(object):
         # print(args[1])
         # If escape is pressed, kill everything.
         if args[1] == GLBase.ESCAPE:
+            glutLeaveMainLoop()
             sys.exit(0)
 
     def framerate(self):
