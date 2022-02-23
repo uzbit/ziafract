@@ -13,6 +13,7 @@ import time
 
 random.seed()
 
+
 class Zia3D(GLBase):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -23,12 +24,16 @@ class Zia3D(GLBase):
         self.ypts = ypts
         self.zpts = zpts
         self.center = np.array([0.0, 0.0, -15.0])
-        self.rotate = np.array([0.0, 0.0, 0.0, 1.0])
-        self.dRotate = np.array([1.0, 0, 0, 0])
+        self.rotate = np.array([0.0, 0.0, 0.0, 0.0])
+        self.dRotate = np.array([0.0, 0.0, 0.0, 0.0])
+        self.ddRotate = np.array([0.0, 0.0, 0.0, 0.0])
+        self.dddRotate = np.array([0.0, 0.0, 0.0, 0.0])
         self.size = 0.05
         self.rotateV = 0.1
         self.time = 0
-        
+
+        self.N_differential = 5
+
         # Make the zia matrix
         self.arr = np.array([])
         for xpt, ypt, zpt in zip(self.xpts, self.ypts, self.zpts):
@@ -56,6 +61,43 @@ class Zia3D(GLBase):
         glColor3f(1, 1, 1)
         drawCube(0, 0, 0, self.size)
 
+        self.drawZiaZoom()
+
+        # self.drawZiaTest()
+
+        #  since this is double buffered, swap the buffers to display what just got drawn.
+        glutSwapBuffers()
+
+        self.__updateRotate()
+
+        self.framerate()
+
+    def __updateRotate(self):
+        scale_rando = 1000
+        if int(self.time) % int(10 * (1 + np.random.rand()) + 5) == 0:
+            self.dddRotate = scale_rando * (0.5 - np.random.rand(4))
+
+        self.ddRotate += 10 * self.dddRotate
+        self.dRotate += 5 * self.ddRotate
+        self.rotate += self.dRotate
+
+        self.rotate = scale_rando * self.rotate / np.linalg.norm(self.rotate)
+        # print(self.rotate)
+
+    def drawZiaZoom(self):
+        # Draw the zia using draw arrays (executes on Graphics card this way since only one cpu call sends the whole zia)
+        glEnableClientState(GL_COLOR_ARRAY)
+        glEnableClientState(GL_VERTEX_ARRAY)
+
+        # glTranslatef(0, 0, -(10 * np.sin(self.time)+5))
+        glRotatef(*self.rotate)
+        glColorPointer(3, GL_FLOAT, 0, self.col)
+        glVertexPointer(3, GL_FLOAT, 0, self.arr)
+        glDrawArrays(GL_TRIANGLES, 0, int(self.arr.shape[0] / 3))
+        glDisableClientState(GL_COLOR_ARRAY)
+        glDisableClientState(GL_VERTEX_ARRAY)
+
+    def drawZiaTest(self):
         # Draw the zia using draw arrays (executes on Graphics card this way since only one cpu call sends the whole zia)
         glEnableClientState(GL_COLOR_ARRAY)
         glEnableClientState(GL_VERTEX_ARRAY)
@@ -66,13 +108,6 @@ class Zia3D(GLBase):
         glDrawArrays(GL_TRIANGLES, 0, int(self.arr.shape[0] / 3))
         glDisableClientState(GL_COLOR_ARRAY)
         glDisableClientState(GL_VERTEX_ARRAY)
-
-        #  since this is double buffered, swap the buffers to display what just got drawn.
-        glutSwapBuffers()
-
-        self.rotate += self.dRotate
-
-        self.framerate()
 
 
 def main():

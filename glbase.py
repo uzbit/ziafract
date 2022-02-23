@@ -119,6 +119,7 @@ CUBE = [
     1.0,
 ]
 
+
 def drawCube(xpt, ypt, zpt, size):
     # Old method of drawing, each call is executed on the CPU -> slow
     glPushMatrix()
@@ -180,6 +181,7 @@ def drawCube(xpt, ypt, zpt, size):
     glEnd()
     glPopMatrix()
 
+
 def getCubeArray(xpt, ypt, zpt, size):
     # scale by size
     arr = size * np.array(list(CUBE))
@@ -189,6 +191,7 @@ def getCubeArray(xpt, ypt, zpt, size):
         arr[1 + i] += ypt
         arr[2 + i] += zpt
     return np.array(arr)
+
 
 class GLBase(object):
     # Some api in the chain is translating the keystrokes to this octal string

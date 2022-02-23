@@ -115,7 +115,7 @@ def amount(gen, limit=float("inf")):
 
 def in_circle(radius):
     """Returns ``abs(z) < radius`` boolean value function for a given ``z``"""
-    return lambda z: z.real ** 2 + z.imag ** 2 < radius ** 2
+    return lambda z: z.real**2 + z.imag**2 < radius**2
 
 
 def fractal_eta(z, func, limit, radius=2):
@@ -128,7 +128,7 @@ def fractal_eta(z, func, limit, radius=2):
 
 def cqp(c):
     """Complex quadratic polynomial, function used for Mandelbrot fractal"""
-    return lambda z: z ** 2 + c
+    return lambda z: z**2 + c
 
 
 def get_model(model, depth, c):
