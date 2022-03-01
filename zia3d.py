@@ -24,10 +24,10 @@ class Zia3D(GLBase):
         self.ypts = ypts
         self.zpts = zpts
         self.center = np.array([0.0, 0.0, -15.0])
-        self.rotate = np.array([0.0, 0.0, 0.0, 0.0])
-        self.dRotate = np.array([0.0, 0.0, 0.0, 0.0])
-        self.ddRotate = np.array([0.0, 0.0, 0.0, 0.0])
-        self.dddRotate = np.array([0.0, 0.0, 0.0, 0.0])
+        self.rotate = np.array([1.0, 0.0, 0.0, 0.0])
+        self.dRotate = np.array([1.0, 0.0, 0.0, 0.0])
+        self.ddRotate = np.array([1.0, 0.0, 0.0, 0.0])
+        self.dddRotate = np.array([1.0, 0.0, 0.0, 0.0])
         self.size = 0.05
         self.rotateV = 0.1
         self.time = 0
@@ -73,12 +73,14 @@ class Zia3D(GLBase):
         self.framerate()
 
     def __updateRotate(self):
-        scale_rando = 1000
-        if int(self.time) % int(10 * (1 + np.random.rand()) + 5) == 0:
+        scale_rando = 100
+        if np.random.rand() > 0.98:
             self.dddRotate = scale_rando * (0.5 - np.random.rand(4))
 
-        self.ddRotate += 10 * self.dddRotate
-        self.dRotate += 5 * self.ddRotate
+        self.ddRotate += self.dddRotate
+        self.ddRotate /= np.linalg.norm(self.ddRotate)
+        self.dRotate += self.ddRotate
+        self.dRotate /= np.linalg.norm(self.dRotate)
         self.rotate += self.dRotate
 
         self.rotate = scale_rando * self.rotate / np.linalg.norm(self.rotate)
