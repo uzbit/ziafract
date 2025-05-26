@@ -24,6 +24,7 @@ class Zia3D(GLBase):
         self.ypts = ypts
         self.zpts = zpts
         self.center = np.array([0.0, 0.0, -15.0])
+        self.dcenter = np.array([0.0, 0.0, 0.1])
         self.rotate = np.array([1.0, 0.0, 0.0, 0.0])
         self.dRotate = np.array([1.0, 0.0, 0.0, 0.0])
         self.ddRotate = np.array([1.0, 0.0, 0.0, 0.0])
@@ -50,7 +51,10 @@ class Zia3D(GLBase):
         print(self.arr.ravel())
 
     def drawGLScene(self):
-        self.time += 0.1
+        self.time += 0.01
+        self.center = np.array(
+            [0.0, 0.5, -10]
+        ) + self.center * np.sin(self.time)
 
         # Clear The Screen And The Depth Buffer
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
@@ -82,7 +86,6 @@ class Zia3D(GLBase):
         self.dRotate += self.ddRotate
         self.dRotate /= np.linalg.norm(self.dRotate)
         self.rotate += self.dRotate
-
         self.rotate = scale_rando * self.rotate / np.linalg.norm(self.rotate)
         # print(self.rotate)
 
